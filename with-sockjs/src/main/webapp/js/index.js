@@ -2,10 +2,22 @@ import React from "react";
 import ReactDom from "react-dom";
 import SockJsClient from "react-stomp";
 
+
 const runWithInterval = (func, interval) => {
     return setInterval(function () {
         func();
     }, interval);
+};
+
+const generateBetEvent = () => {
+
+    return {
+        name:      'Реал - Барса',
+        type:      'П1',
+        coef:      '1.5',
+        timestamp: new Date().valueOf(),
+        brand:     'bet360'
+    }
 };
 
 class App extends React.Component {
@@ -18,7 +30,6 @@ class App extends React.Component {
             timerId: timerId
         });
 
-        console.log(timerId);
     }
 
     constructor(props) {
@@ -27,19 +38,33 @@ class App extends React.Component {
         this.state = {
             clientConnected: false,
             sendingEvents:   [],
+            receivingEvents: [],
             timerId:         null
         };
     }
 
     onSummaryReceive = (msg) => {
-        this.setState(prevState => ({
-            sendingEvents: [ ...prevState.sendingEvents, msg ]
-        }));
+        this.setState(prevState => {
+            return ({
+                receivingEvents: [
+                    ...prevState.receivingEvents,
+                    {
+                        ...msg.body,
+                        receiveAt: new Date().valueOf()
+                    } ]
+            });
+        });
     };
 
     sendEvent = () => {
         try {
-            this.clientRef.sendMessage("/app/all", JSON.stringify("hello world"));
+            const betEvent = generateBetEvent();
+            this.setState(prevState => ({
+                sendingEvents: [ ...prevState.sendingEvents, betEvent ]
+            }));
+
+            this.clientRef.sendMessage("/app/all", JSON.stringify(betEvent));
+
             return true;
         } catch (e) {
             return false;
@@ -51,6 +76,13 @@ class App extends React.Component {
             clearTimeout(this.state.timerId);
             this.setState({ timerId: null })
         }
+    };
+
+    clear = () => {
+        this.setState({
+            sendingEvents:   [],
+            receivingEvents: [],
+        })
     };
 
     startEvent = () => {
@@ -73,13 +105,13 @@ class App extends React.Component {
             >
                 <div
                     style={ {
-                        display:        'flex',
-                        flexDirection:  'row',
-                        justifyContent: 'space-between'
+                        display:       'flex',
+                        flexDirection: 'row'
                     } }
                 >
                     <button style={ { width: 250 } } onClick={ this.startEvent }> Run</button>
                     <button style={ { width: 250 } } onClick={ this.stopEvent }> Stop</button>
+                    <button style={ { width: 250 } } onClick={ this.clear }> Clear</button>
                 </div>
                 <div
                     style={ {
@@ -92,11 +124,14 @@ class App extends React.Component {
                         display:       'flex',
                         flexDirection: 'column',
                         height:        500,
-                        overflow:      'auto'
+                        overflow:      'auto',
+                        width:         '100%'
                     } }>
                         {
                             this.state.sendingEvents.map((event, i) => (
-                                <div key={ i }>{ event }</div>
+                                <div key={ i }>
+                                    { i + ". " + event.name + " " + event.type + " " + event.coef }
+                                </div>
                             ))
                         }
                     </div>
@@ -104,11 +139,18 @@ class App extends React.Component {
                         display:       'flex',
                         flexDirection: 'column',
                         height:        500,
-                        overflow:      'auto'
+                        overflow:      'auto',
+                        width:         '100%'
                     } }>
                         {
-                            this.state.sendingEvents.map((event, i) => (
-                                <div key={ i }>{ event }</div>
+                            this.state.receivingEvents.map((event, i) => (
+                                <div key={ i }>
+                                    {
+                                        i + ". " + event.timestamp
+                                        + " --- "
+                                        + event.receiveAt
+                                    }
+                                </div>
                             ))
                         }
                     </div>

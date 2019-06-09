@@ -1,4 +1,4 @@
-package lahsivjar.spring.websocket.template;
+package ru.holuhoev.bet;
 
 import java.io.IOException;
 

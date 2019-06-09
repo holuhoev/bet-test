@@ -1,4 +1,4 @@
-package lahsivjar.spring.websocket.template;
+package ru.holuhoev.bet;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
