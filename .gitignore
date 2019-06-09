@@ -1,0 +1,8 @@
+.classpath
+.project
+.settings
+dynamic_resources
+node_modules
+target
+.idea
+*.iml
